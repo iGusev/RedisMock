@@ -13,7 +13,7 @@ namespace M6Web\Component\RedisMock;
  */
 class RedisMockFactory
 {
-    protected $redisCommands = array(
+    protected $redisCommands = [
         'append',
         'auth',
         'bgrewriteaof',
@@ -32,8 +32,12 @@ class RedisMockFactory
         'del',
         'discard',
         'dump',
-        'echo',
-        'eval',
+        /*
+         * echo and eval cannot be function names
+         * no solution for mocking this for now
+         */
+        //'echo',
+        //'eval',
         'evalsha',
         'exec',
         'exists',
@@ -156,7 +160,7 @@ class RedisMockFactory
         'sscan',
         'hscan',
         'zscan',
-    );
+    ];
 
     protected $classTemplate = <<<'CLASS'
 
@@ -267,6 +271,7 @@ CONSTRUCTOR;
                     $methodsCode .= strtr($this->methodTemplateException, array(
                             '{{method}}'    => $methodName,
                             '{{signature}}' => $this->getMethodSignature($method),
+                            '{{args}}'      => $this->getMethodArgs($method),
                         ));
                 } else {
                     throw new UnsupportedException(sprintf('Redis command `%s` is not supported by RedisMock.', $methodName));
@@ -315,6 +320,8 @@ CONSTRUCTOR;
                 } else {
                     $signature .= var_export($parameter->getDefaultValue(), true);
                 }
+            } elseif ($parameter->isOptional()) {
+                $signature .= ' = NULL ';
             }
 
             $signatures[] = $signature;
